@@ -56,7 +56,7 @@ class Fruit extends SpriteAnimationComponent
   }
   void collidedWithPlayer() async {
     if (!collected) {
-      collected = true;
+      collected = true; // Set immediately to prevent multiple calls
       game.currentLevel.collectedFruits++;
       animation = SpriteAnimation.fromFrameData(
         game.images.fromCache('Items/Fruits/Collected.png'),

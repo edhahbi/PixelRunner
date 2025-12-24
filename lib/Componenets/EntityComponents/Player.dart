@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
-import 'package:flame/game.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:pixel_runner/Componenets/EntityComponents/Checkpoint.dart';
 import 'package:pixel_runner/Componenets/EntityComponents/CollisionBlock.dart';

@@ -59,10 +59,8 @@ class PixelRunner extends FlameGame with HasCollisionDetection {
 
   Future<void> _loadSounds() async {
     await FlameAudio.audioCache.loadAll([
-      'jump.wav',
-      'hit.wav',
       'disappear.wav',
-      'collect_fruit.wav',
+      'bgm.mp3'
     ]);
   }
 
