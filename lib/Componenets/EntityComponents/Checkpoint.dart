@@ -7,6 +7,8 @@ import 'package:pixel_runner/PixelRunner.dart';
 
 class Checkpoint extends SpriteAnimationComponent
     with HasGameReference<PixelRunner>, CollisionCallbacks {
+  bool hasBeenReached = false;
+  
   Checkpoint({
     position,
     size,
@@ -26,7 +28,10 @@ class Checkpoint extends SpriteAnimationComponent
   @override
   void onCollisionStart(
       Set<Vector2> intersectionPoints, PositionComponent other) {
-    if (other is Player && game.currentLevel.collectedAllFruits()) _reachedCheckpoint();
+    if (!hasBeenReached && other is Player && game.currentLevel.collectedAllFruits()) {
+      hasBeenReached = true;
+      _reachedCheckpoint();
+    }
     super.onCollisionStart(intersectionPoints, other);
   }
 
@@ -55,5 +60,11 @@ class Checkpoint extends SpriteAnimationComponent
     _loadAnimation(26, "Flag Out", 0.05,false);
     await animationTicker?.completed;
     _loadAnimation(10, "Flag Idle", 0.05);
+  }
+  
+  // Reset checkpoint to initial state after player respawn
+  void resetCheckpoint() {
+    hasBeenReached = false;
+    _loadAnimation(1, "No Flag", 1);
   }
 }

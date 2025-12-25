@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:pixel_runner/Componenets/PhysicsComponents/CustomHitBox.dart';
 import 'package:pixel_runner/PixelRunner.dart';
 
@@ -9,6 +10,8 @@ class Fruit extends SpriteAnimationComponent
     with HasGameReference<PixelRunner>{
   final String fruit;
   final double stepTime = 0.05;
+  bool collected = false;
+
   Fruit({
     this.fruit = 'Apple',
     position,
@@ -24,7 +27,7 @@ class Fruit extends SpriteAnimationComponent
     width: 12,
     height: 12,
   );
-  bool collected = false;
+  
 
   @override
   FutureOr<void> onLoad() {
@@ -58,6 +61,8 @@ class Fruit extends SpriteAnimationComponent
     if (!collected) {
       collected = true; // Set immediately to prevent multiple calls
       game.currentLevel.collectedFruits++;
+      FlameAudio.play('collect_fruit.wav', volume: game.soundVolume);
+      
       animation = SpriteAnimation.fromFrameData(
         game.images.fromCache('Items/Fruits/Collected.png'),
         SpriteAnimationData.sequenced(

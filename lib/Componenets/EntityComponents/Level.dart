@@ -18,6 +18,12 @@ class Level extends World with HasGameReference<PixelRunner> {
   List<CollisionBlock> collisionBlocks = [];
   late int collectedFruits = 0;
   late int fruits = 0;
+  
+  // Store fruit spawn data for respawning
+  List<Map<String, dynamic>> fruitSpawnData = [];
+  
+  // Reference to checkpoint for resetting
+  Checkpoint? checkpoint;
 
   Level({required this.levelName});
 
@@ -52,6 +58,15 @@ class Level extends World with HasGameReference<PixelRunner> {
           add(game.player);
           break;
         case 'Fruit':
+          // Store fruit spawn data for respawning
+          fruitSpawnData.add({
+            'name': spawnPoint.name,
+            'x': spawnPoint.x,
+            'y': spawnPoint.y,
+            'width': spawnPoint.width,
+            'height': spawnPoint.height,
+          });
+          
           final fruit = Fruit(
             fruit: spawnPoint.name,
             position: Vector2(spawnPoint.x, spawnPoint.y),
@@ -71,15 +86,17 @@ class Level extends World with HasGameReference<PixelRunner> {
           add(saw);
           break;
         case 'Checkpoint':
-          final checkpoint = Checkpoint(
+          checkpoint = Checkpoint(
             position: Vector2(spawnPoint.x, spawnPoint.y),
             size: Vector2(spawnPoint.width, spawnPoint.height),
           );
-          add(checkpoint);
+          add(checkpoint!);
           break;
       }
       
     }
+    // Normalize total fruits count based on saved spawn data
+    fruits = fruitSpawnData.length;
   }
 
   void _loadCollisions() {
@@ -134,5 +151,33 @@ class Level extends World with HasGameReference<PixelRunner> {
 
   bool collectedAllFruits(){
     return collectedFruits == fruits;
+  }
+  
+  // Respawn all fruits at their original positions
+  void respawnAllFruits() {
+    // Remove all existing fruits (including collected ones)
+    final existingFruits = children.whereType<Fruit>().toList();
+    for (final fruit in existingFruits) {
+      fruit.removeFromParent();
+    }
+    
+    // Reset collected fruits counter
+    collectedFruits = 0;
+    // Normalize total fruits count (safety in case of mismatches)
+    fruits = fruitSpawnData.length;
+    
+    // Respawn all fruits from saved spawn data
+    for (final fruitData in fruitSpawnData) {
+      final fruit = Fruit(
+        fruit: fruitData['name'],
+        position: Vector2(fruitData['x'], fruitData['y']),
+        size: Vector2(fruitData['width'], fruitData['height']),
+      );
+      add(fruit);
+    }
+    
+    // Reset checkpoint to allow re-activation
+    checkpoint?.resetCheckpoint();
+    
   }
 }

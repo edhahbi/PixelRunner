@@ -77,31 +77,24 @@ class Player extends SpriteAnimationGroupComponent
         _applyGravity(fixedDelta);
         _checkVerticalCollision();
       }
-
       accumulatedTime -= fixedDelta;
     }
-    
+    print('${game.currentLevel.collectedFruits}');
     super.update(dt);
   }
 
   @override
-  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
-    if(!reachedCheckpoint){
-      if(other is Fruit){
+  void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
+    if (!reachedCheckpoint) {
+      if (other is Fruit) {
         other.collidedWithPlayer();
-        
-      } 
-      if(other is Saw){
+      } else if (other is Saw) {
         _respawn();
-        
-      } 
-      if(other is Checkpoint && game.currentLevel.collectedAllFruits()){
+      } else if (other is Checkpoint && game.currentLevel.collectedAllFruits()) {
         _reachedCheckpoint();
-        
-      } 
+      }
     }
-    
-    super.onCollision(intersectionPoints, other);
+    super.onCollisionStart(intersectionPoints, other);
   }
 
   void _loadAllAnimations() {
@@ -256,6 +249,7 @@ class Player extends SpriteAnimationGroupComponent
   }
 
   void _playerJump(double dt) {
+    FlameAudio.play('jump.wav');
     velocity.y = -jumpForce;
     position.y += velocity.y * dt;
     hasJumped = false;
@@ -263,11 +257,18 @@ class Player extends SpriteAnimationGroupComponent
   }
   
   void _respawn() async{
+    FlameAudio.play('hit.wav');
     gotHit = true;
+    if (game.playSound) {
+      FlameAudio.play('hit.wav', volume: game.soundVolume);
+    }
     current = PlayerState.hit;
 
     await animationTicker?.completed;
     animationTicker?.reset();
+
+    // Respawn all fruits and reset score
+    game.currentLevel.respawnAllFruits();
 
     scale.x = 1;
     position = startPosition - Vector2.all(32);
@@ -285,7 +286,9 @@ class Player extends SpriteAnimationGroupComponent
   
   void _reachedCheckpoint() async{
     reachedCheckpoint = true; 
-    FlameAudio.play('disappear.wav');
+    if (game.playSound) {
+      FlameAudio.play('disappear.wav', volume: game.soundVolume);
+    }
 
     if(scale.x > 0){
       position = position - Vector2.all(32);
