@@ -1,3 +1,3 @@
 # pixel_runner
 
-A new Flutter project.
+tous les details dans le fichier presentation 

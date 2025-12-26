@@ -106,56 +106,96 @@ flowchart LR
 ### Diagramme de composants (architecture)
 ```mermaid
 graph TB
-    subgraph UI["Interface Utilisateur"]
-        LSM["LevelSelectMenu"]
-        TYP["ThankYouPage"]
+    subgraph Core["🎮 Noyau du Jeu"]
+        PR["PixelRunner<br/><i>FlameGame</i>"]
+        LVL["Level<br/><i>World Component</i>"]
     end
-    subgraph IO["Entrée / Sortie"]
-        IOC["IOComponent<br/>(Joystick + JumpButton)"]
-        JB["JumpButton"]
-        JS["JoystickComponent"]
+    
+    subgraph UI["🖥️ Interface Utilisateur"]
+        MM["MainMenuPage<br/>+ MenuButton<br/>+ PixelStar<br/>+ PixelBorder"]
+        LS["LevelSelectionPage<br/>+ LevelCard<br/>+ BackButton<br/>+ PixelCharacterIcon"]
     end
-    subgraph Game["Noyau du Jeu"]
-        PR["PixelRunner<br/>FlameGame"]
-        LVL["Level<br/>World"]
+    
+    subgraph Input["🕹️ Gestion des Entrées"]
+        IOC["IOComponent<br/>+ JumpButton [inner]<br/>+ JoystickComponent"]
     end
-    subgraph Entities["Entités"]
-        PLY["Player"]
-        EN["Enemy<br/>SpriteAnimationGroupComponent"]
-        C["Chicken"]
-        R["Rino"]
-        PL["Plant"]
-        S["Saw"]
-        F["Fruit"]
-        CP["Checkpoint"]
+    
+    subgraph Characters["👤 Personnages"]
+        PLY["Player<br/><i>Personnage jouable</i>"]
     end
-    subgraph Physics["Physique & Collisions"]
-        CB["CollisionBlock"]
-        SG["SpatialGrid"]
-        CD["CollisionDetection"]
+    
+    subgraph Enemies["👾 Ennemis"]
+        CHK["Chicken<br/><i>Coureur</i>"]
+        RIN["Rino<br/><i>Patrouilleur</i>"]
+        PLT["Plant + Bullet [inner]<br/><i>Tireur</i>"]
     end
-    subgraph Projectiles["Projectiles"]
-        BU["Bullet"]
+    
+    subgraph Items["🎁 Objets & Pièges"]
+        FRT["Fruit<br/><i>Collectible</i>"]
+        SAW["Saw<br/><i>Piège</i>"]
+        CHP["Checkpoint<br/><i>Fin niveau</i>"]
     end
-    subgraph Assets["Ressources"]
-        TA["Tiled Maps<br/>.tmx, .tsx"]
-        SPA["Sprites<br/>Spritesheet"]
-        AUD["Audio<br/>.mp3, .wav"]
+    
+    subgraph Physics["⚙️ Physique & Collisions"]
+        SG["SpatialGrid<br/><i>O(1) queries</i>"]
+        CB["CollisionBlock<br/><i>Plateformes/Murs</i>"]
+        CD["CollisionDetection<br/><i>AABB utils</i>"]
+    end
+    
+    subgraph Resources["📦 Ressources"]
+        TLD["Tiled Maps<br/>.tmx, .tsx"]
+        SPR["Sprites<br/>Spritesheets"]
+        SND["Audio<br/>.mp3, .wav"]
     end
 
-    UI -->|sélect niveau| Game
-    Game -->|crée| LVL
-    Game -->|ajoute| IOC
-    IOC -->|contient| JB
-    IOC -->|contient| JS
-    LVL -->|contient| Entities
+    %% Relations principales
+    PR -->|gère états| UI
+    PR -->|crée & charge| LVL
+    PR -->|ajoute| IOC
+    
+    UI -->|callback startGame| PR
+    UI -->|callback selectLevel| PR
+    
+    LVL -->|contient| Characters
+    LVL -->|contient| Enemies
+    LVL -->|contient| Items
     LVL -->|utilise| Physics
-    PLY -->|lit input| IOC
-    Entities -->|crée| Projectiles
-    Entities -->|anime| Assets
-    LVL -->|charge| TA
-    Physics -->|index| CB
-    Physics -->|optimise| SG
+    LVL -->|charge depuis| Resources
+    
+    PLY -->|lit input via| IOC
+    PLY -->|query collisions| SG
+    PLY -->|interagit avec| Enemies
+    PLY -->|collecte| FRT
+    PLY -->|atteint| CHP
+    
+    CHK -->|poursuit| PLY
+    RIN -->|patrouille| LVL
+    PLT -->|tire Bullet vers| PLY
+    
+    SG -->|index| CB
+    SG -->|optimise requêtes| Physics
+    
+    LVL -->|parse| TLD
+    Characters -->|anime avec| SPR
+    Enemies -->|anime avec| SPR
+    Items -->|anime avec| SPR
+    PR -->|joue| SND
+
+    %% Styling
+    classDef coreStyle fill:#92E426,stroke:#1A1826,stroke-width:3px,color:#000
+    classDef uiStyle fill:#6B9BD1,stroke:#1A1826,stroke-width:2px,color:#fff
+    classDef inputStyle fill:#F4A460,stroke:#1A1826,stroke-width:2px,color:#000
+    classDef entityStyle fill:#E89AC7,stroke:#1A1826,stroke-width:2px,color:#000
+    classDef physicsStyle fill:#8B7EC8,stroke:#1A1826,stroke-width:2px,color:#fff
+    classDef resourceStyle fill:#A0A0A0,stroke:#1A1826,stroke-width:2px,color:#fff
+    
+    class PR,LVL coreStyle
+    class MM,LS uiStyle
+    class IOC inputStyle
+    class PLY,CHK,RIN,PLT entityStyle
+    class FRT,SAW,CHP entityStyle
+    class SG,CB,CD physicsStyle
+    class TLD,SPR,SND resourceStyle
 ```
 
 ### Diagramme de classes (Vue d'ensemble)
@@ -315,286 +355,6 @@ classDiagram
   MainMenuPage *-- PixelStar
   LevelSelectionPage *-- LevelCard
   Player --> IOComponent: reads input
-```
-
-### Diagramme de classe détaillé (Player et IOComponent)
-```mermaid
-classDiagram
-  class Player{
-    -state: PlayerState
-    -velocity: Vector2
-    -horizontalMovement: double
-    -isOnGround: bool
-    -hasJumped: bool
-    -accumulatedTime: double
-    -fixedDeltaTime: double = 1/60
-    -maxIterations: int = 4
-    +moveSpeed: double
-    +gravity: double
-    +jumpForce: double
-    +onLoad()
-    +update(dt)
-    +_handleMovement()
-    +_updatePlayerMovement(dt)
-    +_applyGravity(dt)
-    +_playerJump(dt)
-    +_checkHorizontalCollisions()
-    +_checkVerticalCollision()
-    +_hitboxRect(): Rect
-    +collidedwithEnemy()
-    +_respawn()
-    +_updatePlayerState()
-  }
-  
-  class IOComponent{
-    -joystick: JoystickComponent
-    -jumpButton: JumpButton
-    +onLoad(): FutureOr
-    +getJoystickDelta(): Vector2
-    +isJumpButtonPressed(): bool
-    +getJoystickDirection(): Vector2
-  }
-  
-  class JumpButton{
-    <<inner class of IOComponent>>
-    -isPressed: bool
-    -buttonSize: int = 25
-    +onLoad(): FutureOr
-    +onTapDown(event)
-    +onTapUp(event)
-  }
-  
-  class JoystickComponent{
-    <<Flame built-in>>
-    +direction: JoystickDirection
-    +delta: Vector2
-    +knobRadius: double
-    +margin: EdgeInsets
-  }
-
-  class Level{
-    -collisionBlocks: List~CollisionBlock~
-    -collisionGrid: SpatialGrid
-    -levelName: String
-    -fruitSpawnData: List
-    -chickenSpawnData: List
-    -plantSpawnData: List
-    +onLoad()
-    +_loadLevel()
-    +_loadSpawnObjects()
-    +_loadCollisions()
-    +respawnAll()
-    +respawnFruit(Fruit)
-    +respawnChicken(Chicken)
-    +respawnPlant(Plant)
-  }
-
-  IOComponent *-- JumpButton: contains
-  IOComponent o-- JoystickComponent: contains
-  Player --> IOComponent: reads input via game.ioComponent
-  Player --> Level: queries collisions
-```
-
-### Diagramme de classe détaillé (UI Components avec classes internes)
-```mermaid
-classDiagram
-  class MainMenuPage{
-    -titleText: TextComponent
-    -menuButtons: List~MenuButton~
-    -stars: List~PixelStar~
-    +onLoad(): FutureOr
-  }
-  
-  class MenuButton{
-    <<inner class of MainMenuPage>>
-    -text: String
-    -onTap: Function
-    -background: RectangleComponent
-    +onLoad(): FutureOr
-    +onTapDown(event)
-    +onTapUp(event)
-    +containsLocalPoint(point): bool
-  }
-  
-  class PixelStar{
-    <<inner class of MainMenuPage & LevelSelectionPage>>
-    -timer: double
-    -blinkSpeed: double
-    -isVisible: bool
-    +render(canvas)
-    +update(dt)
-  }
-  
-  class PixelBorder{
-    <<inner class of MainMenuPage>>
-    -startPos: Vector2
-    -endPos: Vector2
-    -isHorizontal: bool
-    +render(canvas)
-  }
-  
-  class LevelSelectionPage{
-    -titleText: TextComponent
-    -levelCards: List~LevelCard~
-    -backButton: BackButton
-    -stars: List~PixelStar~
-    +onLoad(): FutureOr
-  }
-  
-  class LevelCard{
-    <<inner class of LevelSelectionPage>>
-    -levelIndex: int
-    -character: PixelCharacterIcon
-    -background: RectangleComponent
-    -levelNumber: TextComponent
-    +onLoad(): FutureOr
-    +onTapDown(event)
-    +onTapUp(event)
-  }
-  
-  class PixelCharacterIcon{
-    <<inner class of LevelCard>>
-    -characterName: String
-    -sprite: Sprite
-    +render(canvas)
-  }
-  
-  class BackButton{
-    <<inner class of LevelSelectionPage>>
-    -background: RectangleComponent
-    -backText: TextComponent
-    +onLoad(): FutureOr
-    +onTapDown(event)
-    +onTapUp(event)
-  }
-
-  MainMenuPage *-- MenuButton: contains 3
-  MainMenuPage *-- PixelStar: contains 30
-  MainMenuPage *-- PixelBorder: contains 2
-  LevelSelectionPage *-- LevelCard: contains 3
-  LevelSelectionPage *-- BackButton: contains 1
-  LevelSelectionPage *-- PixelStar: contains 25
-  LevelCard *-- PixelCharacterIcon: contains 1
-```
-
-### Diagramme de classe détaillé (Enemies et Projectiles)
-```mermaid
-classDiagram
-  class Chicken{
-    -gotStomped: bool
-    -offNeg: double
-    -offPos: double
-    -rangeNeg: double
-    -rangePos: double
-    -targetDirection: int
-    +runSpeed: double = 80
-    +onLoad()
-    +update(dt)
-    +playerInRange(): bool
-    +_movement(dt)
-    +_updateState()
-    +collidedWithPlayer()
-    +reset()
-  }
-  
-  class Rino{
-    -gotStomped: bool
-    -rushing: bool = true
-    -offNeg: double
-    -offPos: double
-    -rangeNeg: double
-    -rangePos: double
-    +speed: double = 80
-    +onLoad()
-    +update(dt)
-    +_move(dt)
-    +_checkPatrolBounds()
-    +collidedWithPlayer()
-    +reset()
-  }
-  
-  class Plant{
-    -isRight: bool
-    -gotStomped: bool
-    -isShooting: bool
-    -timeSinceLastShot: double
-    -shootCooldown: double = 2.0
-    +onLoad()
-    +update(dt)
-    +_isPlayerInRange(): bool
-    +_checkAndShoot()
-    +_shoot(): Future~void~
-    +collidedWithPlayer()
-    +reset()
-  }
-  
-  class Bullet{
-    <<inner class of Plant>>
-    -direction: Vector2
-    -age: double = 0
-    +speed: double = 150.0
-    +lifetime: double = 5.0
-    +onLoad()
-    +update(dt)
-    +onCollisionStart(other)
-  }
-  
-  class Saw{
-    -isVertical: bool
-    -moveDirection: int = 1
-    -rangeNeg: double
-    -rangePos: double
-    -offNeg: double
-    -offPos: double
-    +sawSpeed: double = 0.03
-    +onLoad()
-    +update(dt)
-    +_movement(dt)
-  }
-
-  Plant ..> Bullet: creates 3 per burst
-```
-
-### Diagramme de classe détaillé (Physique et Collisions)
-```mermaid
-classDiagram
-  class SpatialGrid{
-    -cellSize: double
-    -_grid: Map~String, List~CollisionBlock~~
-    +SpatialGrid(cellSize)
-    +insert(block: CollisionBlock)
-    +buildFromBlocks(blocks: List~CollisionBlock~)
-    +queryAabb(aabb: Rect): Iterable~CollisionBlock~
-    -_cellKey(x, y): String
-    -_getCellCoords(x, y): Point~int~
-  }
-  
-  class CollisionBlock{
-    -isPlatform: bool
-    -isWall: bool
-    +x: double
-    +y: double
-    +width: double
-    +height: double
-    +CollisionBlock(position, size, isPlatform, isWall)
-  }
-  
-  class CollisionDetection{
-    <<utility class>>
-    +checkCollision(player, block): bool
-  }
-  
-  class CustomHitbox{
-    <<utility class>>
-    +offsetX: double
-    +offsetY: double
-    +width: double
-    +height: double
-  }
-
-  SpatialGrid o-- CollisionBlock: indexes many
-  Level --> SpatialGrid: uses for O(1) queries
-  Player --> SpatialGrid: queries via queryAabb()
 ```
 
 ### Organisation des classes internes (Architecture fichiers)
