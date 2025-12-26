@@ -1,6 +1,6 @@
 # pixel_runner
 
-tous les details dans le fichier presentation 
+tous les details sont mentionnees dans le fichier presentation 
 
 pour une meilleure lisibilite utilisier Obsidian pour voire clairement les diagrammes UML sinon vous pouvez voir tous les images des diagrammes dans le fichier UML
 
