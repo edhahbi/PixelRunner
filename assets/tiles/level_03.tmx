@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="23" tilewidth="16" tileheight="16" infinite="0" nextlayerid="4" nextobjectid="29">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="23" tilewidth="16" tileheight="16" infinite="0" nextlayerid="4" nextobjectid="41">
  <tileset firstgid="1" source="pixel_adventure.tsx"/>
  <layer id="1" name="Background" width="40" height="23">
   <properties>
@@ -54,6 +54,18 @@
     <property name="isRight" type="bool" value="false"/>
    </properties>
   </object>
+  <object id="29" name="Melon" type="Fruit" x="176" y="96" width="32" height="32"/>
+  <object id="30" name="Melon" type="Fruit" x="320" y="144" width="32" height="32"/>
+  <object id="31" name="Melon" type="Fruit" x="432" y="192" width="32" height="32"/>
+  <object id="32" name="Orange" type="Fruit" x="160" y="240" width="32" height="32"/>
+  <object id="33" name="Orange" type="Fruit" x="304" y="192" width="32" height="32"/>
+  <object id="34" name="Orange" type="Fruit" x="448" y="96" width="32" height="32"/>
+  <object id="35" name="Cherry" type="Fruit" x="160" y="144" width="32" height="32"/>
+  <object id="36" name="Cherry" type="Fruit" x="304" y="96" width="32" height="32"/>
+  <object id="37" name="Cherry" type="Fruit" x="304" y="240" width="32" height="32"/>
+  <object id="38" name="Banana" type="Fruit" x="160" y="192" width="32" height="32"/>
+  <object id="39" name="Banana" type="Fruit" x="432" y="240" width="32" height="32"/>
+  <object id="40" name="Banana" type="Fruit" x="448" y="144" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="2" name="Collisions">
   <object id="1" x="32" y="160" width="48" height="32"/>

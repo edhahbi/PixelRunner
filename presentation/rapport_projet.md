@@ -10,7 +10,7 @@
 ---
 
 ## Résumé / Abstract
-PixelRunner est un jeu de plateforme 2D pixellisé développé avec Flutter et Flame, jouable sur mobile, desktop et web. Le joueur parcourt des niveaux, évite des pièges (scies), affronte des ennemis (Chicken, Rino, Plant), collecte des fruits et atteint le checkpoint final. Le projet met l’accent sur des animations fluides, une intégration Tiled pour la création de niveaux, et des mécaniques de tir/interaction (Plant tire trois projectiles en rafales, vers l’avant). Le jeu propose un menu de sélection de niveaux au démarrage et un écran de remerciement pixelisé qui permet de quitter l’application par un simple tap. Résultats: plusieurs niveaux complets, optimisation des performances, réutilisation d’assets, sélection de niveau et écran de fin.
+PixelRunner est un jeu de plateforme 2D pixellisé développé avec Flutter et Flame, jouable sur mobile, desktop et web. Le joueur parcourt des niveaux, évite des pièges (scies), affronte des ennemis (Chicken, Rino, Plant), collecte des fruits et atteint le checkpoint final. Le projet met l’accent sur des animations fluides, une intégration Tiled pour la création de niveaux, et des mécaniques de tir/interaction (Plant tire trois projectiles en rafales, vers l’avant). Le jeu propose un menu qui premet de sélection de niveaux au démarrage qui de quitter l’application par un simple tap. Résultats: plusieurs niveaux complets, optimisation des performances, réutilisation d’assets, sélection de niveau et écran de fin.
 
 ---
 
@@ -73,7 +73,7 @@ flowchart LR
     Joueur --"Affronter ennemis"--> Systeme
     Joueur --"Atteindre checkpoint"--> Systeme
     Joueur --"Choisir niveau (menu)"--> Systeme
-    Systeme --"Afficher écran remerciement"--> Joueur
+    Systeme --"Quitter le jeu"--> Joueur
 ```
 
 ---
@@ -101,7 +101,7 @@ flowchart LR
   - Au démarrage: chargement des images/sons, affichage du `LevelSelectMenu`.
   - Sélection d'un niveau → création de `Level` et `CameraComponent` (résolution fixe 640×360).
   - BGM via `FlameAudio.bgm.play('bgm.mp3')`.
-  - Fin de progression → affichage `ThankYouPage` (tap pour quitter).
+  - Fin de progression → (tap pour quitter).
 
 ### Diagramme de composants (architecture)
 ```mermaid
@@ -619,82 +619,6 @@ Le projet utilise une organisation où certaines classes auxiliaires sont défin
 - Notation `<<inner class of Parent>>` pour indiquer la dépendance explicite
 - Relation de composition (`*--`) pour montrer que la classe interne fait partie intégrante de la classe parente
 
-```
-
-### Diagramme d'état (Player States)
-```mermaid
-stateDiagram-v2
-  [*] --> Idle
-  Idle --> Running: mouvement horizontal
-  Running --> Idle: arrêt mouvement
-  Running --> Jumping: saut
-  Idle --> Jumping: saut
-  Jumping --> Falling: gravity > 0
-  Falling --> Idle: collision sol
-  Falling --> Running: collision sol + mouvement
-  Jumping --> Idle: collision sol (sans mouvement)
-  Idle --> Hit: collision ennemi
-  Running --> Hit: collision ennemi
-  Jumping --> Hit: collision ennemi
-  Falling --> Hit: collision ennemi
-  Hit --> Appearing: respawn initié
-  Appearing --> Idle: respawn complété
-  Idle --> Disappearing: checkpoint atteint
-  Disappearing --> [*]
-```
-
-### Diagramme d'état (Enemy/Chicken States)
-```mermaid
-stateDiagram-v2
-  [*] --> Idle
-  Idle --> Run: player in range
-  Run --> Idle: player out range
-  Idle --> Hit: stomp
-  Run --> Hit: stomp
-  Hit --> [*]: animation complete
-```
-
-### Diagramme d'activité (Game Loop avec Fixed Timestep)
-```mermaid
-flowchart TD
-  Start([Démarrage]) --> Load[Charger assets/sons]
-  Load --> Menu[Afficher LevelSelectMenu]
-  Menu --> Select{Niveau sélectionné?}
-  Select -->|Non| Menu
-  Select -->|Oui| CreateLevel[Créer Level & Camera]
-  CreateLevel --> BuildGrid[Construire SpatialGrid]
-  
-  BuildGrid --> GameLoop["Game Loop"]
-  GameLoop --> Update[update dt]
-  Update --> AccumTime["accumulatedTime += dt"]
-  AccumTime --> Check{"accumulatedTime >= fixedDelta<br/>& iterations < maxIter?"}
-  Check -->|Oui| PhysicsStep["Physics update<br/>fixedDelta"]
-  PhysicsStep --> PlayerMove["_updatePlayerMovement"]
-  PlayerMove --> QueryGrid["SpatialGrid.queryAabb"]
-  QueryGrid --> CheckColl["_checkCollisions"]
-  CheckColl --> ApplyGrav["_applyGravity"]
-  ApplyGrav --> IncIter["iterations++"]
-  IncIter --> Check
-  Check -->|Non| Draw["Render"]
-  Draw --> Input{"Input?"}
-  Input -->|Jump| Jump["_playerJump"]
-  Input -->|Move| Move["_handleMovement"]
-  Jump --> Draw
-  Move --> Draw
-  Draw --> Collide{"Collision détectée?"}
-  Collide -->|Fruit| Collect["collectFruit"]
-  Collect --> Draw
-  Collide -->|Enemy| Damage["_respawn"]
-  Damage --> Draw
-  Collide -->|Checkpoint| End["nextLevel"]
-  End --> AllLevels{"Tous niveaux<br/>complétés?"}
-  AllLevels -->|Non| CreateLevel
-  AllLevels -->|Oui| ThankYou["ThankYouPage"]
-  ThankYou --> Tap{"Tap?"}
-  Tap -->|Oui| Exit([Quitter])
-  Tap -->|Non| Tap
-```
-
 ### Diagramme de séquence (tir du Plant)
 ```mermaid
 sequenceDiagram
@@ -969,7 +893,7 @@ flutter run
 - **Améliorations**:
   - Plus d’ennemis/obstacles, power-ups, boss.
   - Sauvegarde de progression, scores, classements.
-  - Effets sonores/musiques supplémentaires, options d’accessibilité.
+  - Effets sonores/musiques supplémentaires.
 
 ---
 
