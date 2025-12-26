@@ -165,7 +165,7 @@ class Player extends SpriteAnimationGroupComponent
   }
 
   void _handleMovement() {
-    switch (game.joystick.direction) {
+    switch (game.ioComponent.joystick.direction) {
       case JoystickDirection.left:
       case JoystickDirection.upLeft:
       case JoystickDirection.downLeft:

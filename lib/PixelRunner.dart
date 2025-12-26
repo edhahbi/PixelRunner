@@ -6,7 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:pixel_runner/Componenets/EntityComponents/Level.dart';
 import 'package:pixel_runner/Componenets/EntityComponents/Player/Player.dart';
-import 'package:pixel_runner/Componenets/IOcomponents/JumpButton.dart';
+import 'package:pixel_runner/Componenets/IOcomponents/IOComponent.dart';
 import 'package:pixel_runner/Componenets/UIcomponents/LevelSelection.dart';
 import 'package:pixel_runner/Componenets/UIcomponents/MainMenuPage.dart';
 
@@ -19,8 +19,7 @@ class PixelRunner extends FlameGame with HasCollisionDetection {
   late Player player = Player(characterName: 'Ninja Frog');
   late Level currentLevel;
   late CameraComponent cam;
-  late JumpButton jumpButton;
-  late JoystickComponent joystick;
+  late IOComponent ioComponent;
   
   List<String> levelNames = ['level_01', 'level_02', 'level_03'];
   List<String> characterNames = ['Ninja Frog', 'Mask Dude', 'Pink Man'];
@@ -117,27 +116,16 @@ class PixelRunner extends FlameGame with HasCollisionDetection {
     removeWhere((component) => 
       component is Level || 
       component is CameraComponent ||
+      component is IOComponent ||
       component is MainMenuPage ||
       component is LevelSelectionPage
     );
   }
 
   void _addControls() {
-    // Add joystick directly to game (not to world)
-    joystick = JoystickComponent(
-      background: SpriteComponent(
-        sprite: Sprite(images.fromCache('HUD/Joystick.png')),
-      ),
-      knob: SpriteComponent(sprite: Sprite(images.fromCache('HUD/Knob.png'))),
-      knobRadius: 20,
-      margin: const EdgeInsets.only(left: 5, bottom: 32),
-      priority: 100,
-    );
-    add(joystick);
-
-    // Add jump button directly to game (not to world)
-    jumpButton = JumpButton();
-    add(jumpButton);
+    // Add IOComponent which contains joystick and jump button
+    ioComponent = IOComponent();
+    add(ioComponent);
   }
 
   void _loadLevel() {
