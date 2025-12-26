@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:pixel_runner/PixelRunner.dart';
@@ -9,6 +8,7 @@ class JumpButton extends SpriteComponent
   JumpButton();
 
   final buttonSize = 25;
+  bool isPressed = false;
 
   @override
   FutureOr<void> onLoad() {
@@ -17,19 +17,28 @@ class JumpButton extends SpriteComponent
       game.size.x - 45 - buttonSize,
       game.size.y - 60 - buttonSize,
     );
-    priority = 10;
+    priority = 100;
     return super.onLoad();
   }
 
   @override
   void onTapDown(TapDownEvent event) {
+    isPressed = true;
     game.player.hasJumped = true;
     super.onTapDown(event);
   }
 
   @override
   void onTapUp(TapUpEvent event) {
+    isPressed = false;
     game.player.hasJumped = false;
     super.onTapUp(event);
+  }
+
+  @override
+  void onTapCancel(TapCancelEvent event) {
+    isPressed = false;
+    game.player.hasJumped = false;
+    super.onTapCancel(event);
   }
 }

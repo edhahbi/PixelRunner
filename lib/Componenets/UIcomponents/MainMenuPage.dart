@@ -91,12 +91,17 @@ class MainMenuPage extends Component with HasGameReference<PixelRunner> {
     menuButtons = [
       MenuButton(
         text: 'START GAME',
-        position: Vector2(game.size.x / 2, game.size.y / 2 + 10),
+        position: Vector2(game.size.x / 2, game.size.y / 2 - 10),
         onTap: () => game.startGame(),
       ),
       MenuButton(
+        text: 'SELECT LEVEL',
+        position: Vector2(game.size.x / 2, game.size.y / 2 + 60),
+        onTap: () => game.showLevelSelection(),
+      ),
+      MenuButton(
         text: 'EXIT',
-        position: Vector2(game.size.x / 2, game.size.y / 2 + 80),
+        position: Vector2(game.size.x / 2, game.size.y / 2 + 130),
         onTap: () => game.exitGame(),
       ),
     ];

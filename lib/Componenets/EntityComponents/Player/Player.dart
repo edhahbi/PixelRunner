@@ -1,13 +1,14 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame_audio/flame_audio.dart';
-import 'package:pixel_runner/Componenets/EntityComponents/Checkpoint.dart';
-import 'package:pixel_runner/Componenets/EntityComponents/Chicken.dart';
-import 'package:pixel_runner/Componenets/EntityComponents/Fruit.dart';
-import 'package:pixel_runner/Componenets/EntityComponents/Plant.dart';
-import 'package:pixel_runner/Componenets/EntityComponents/Rino.dart';
-import 'package:pixel_runner/Componenets/EntityComponents/Saw.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/PlatformingElements/Checkpoint.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Enemies/Chicken.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Collectables/Fruit.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Enemies/Plant.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Enemies/Rino.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Traps/Saw.dart';
 import 'package:pixel_runner/Componenets/PhysicsComponents/CustomHitBox.dart';
 import 'package:pixel_runner/Componenets/ConstVars.dart';
 import 'package:pixel_runner/Componenets/PhysicsComponents/CollisionDetection.dart';
@@ -215,7 +216,8 @@ class Player extends SpriteAnimationGroupComponent
   }
 
   void _checkHorizontalCollisions() {
-    for (final block in game.currentLevel.collisionBlocks) {
+    final rect = _hitboxRect();
+    for (final block in game.currentLevel.collisionGrid.queryAabb(rect)) {
       //handeling collisions
       if (checkCollision(this, block) && !block.isPlatform
       ) {
@@ -238,7 +240,8 @@ class Player extends SpriteAnimationGroupComponent
   }
 
   void _checkVerticalCollision() {
-    for (final block in game.currentLevel.collisionBlocks) {
+    final rect = _hitboxRect();
+    for (final block in game.currentLevel.collisionGrid.queryAabb(rect)) {
       //if there is a collision
       if (checkCollision(this, block)) {
         //treat it the blocks the same way when falling
@@ -317,7 +320,17 @@ class Player extends SpriteAnimationGroupComponent
 
     const waitToChange = Duration(seconds: 1);
     velocity = Vector2.all(0);
-    Future.delayed(waitToChange,() => game.loadNextLevel());
+    Future.delayed(waitToChange,() => game.showMainMenu());
+  }
+
+  Rect _hitboxRect() {
+    final hb = hitbox;
+    final playerX = position.x + hb.offsetX;
+    final playerY = position.y + hb.offsetY;
+    final fixedX = scale.x < 0
+        ? playerX - (hb.offsetX * 2) - hb.width
+        : playerX;
+    return Rect.fromLTWH(fixedX, playerY, hb.width, hb.height);
   }
 
   void collidedwithEnemy() {

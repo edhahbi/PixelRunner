@@ -3,22 +3,24 @@ import 'dart:async';
 import 'package:flame/components.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:pixel_runner/Componenets/EntityComponents/Checkpoint.dart';
-import 'package:pixel_runner/Componenets/EntityComponents/Chicken.dart';
-import 'package:pixel_runner/Componenets/EntityComponents/CollisionBlock.dart';
-import 'package:pixel_runner/Componenets/EntityComponents/Fruit.dart';
-import 'package:pixel_runner/Componenets/EntityComponents/Plant.dart';
-import 'package:pixel_runner/Componenets/EntityComponents/Rino.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/PlatformingElements/Checkpoint.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Enemies/Chicken.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/PlatformingElements/CollisionBlock.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Collectables/Fruit.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Enemies/Plant.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Enemies/Rino.dart';
 import 'package:pixel_runner/Componenets/ConstVars.dart';
-import 'package:pixel_runner/Componenets/EntityComponents/Saw.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Traps/Saw.dart';
 import 'package:pixel_runner/PixelRunner.dart';
 import 'package:flame/parallax.dart';
+import 'package:pixel_runner/Componenets/PhysicsComponents/SpatialGrid.dart';
 
 class Level extends World with HasGameReference<PixelRunner> {
   late String levelName;
 
   late TiledComponent level;
   List<CollisionBlock> collisionBlocks = [];
+  late SpatialGrid collisionGrid;
   late int collectedFruits = 0;
   late int fruits = 0;
   
@@ -150,6 +152,10 @@ class Level extends World with HasGameReference<PixelRunner> {
           collisionBlocks.add(block);
       }
     }
+
+    // Build spatial grid for collision blocks
+    collisionGrid = SpatialGrid(cellSize: tileSize);
+    collisionGrid.buildFromBlocks(collisionBlocks);
   }
 
   void _scrollingBackground() {

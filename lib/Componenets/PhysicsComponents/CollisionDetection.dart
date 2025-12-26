@@ -1,5 +1,5 @@
-import 'package:pixel_runner/Componenets/EntityComponents/CollisionBlock.dart';
-import 'package:pixel_runner/Componenets/EntityComponents/Player.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/PlatformingElements/CollisionBlock.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Player/Player.dart';
 
 bool checkCollision(Player player,CollisionBlock block) {
   final hitbox = player.hitbox;

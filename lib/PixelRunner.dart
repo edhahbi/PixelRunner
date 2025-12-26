@@ -5,12 +5,12 @@ import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:pixel_runner/Componenets/EntityComponents/Level.dart';
-import 'package:pixel_runner/Componenets/EntityComponents/Player.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Player/Player.dart';
 import 'package:pixel_runner/Componenets/IOcomponents/JumpButton.dart';
-import 'package:pixel_runner/Componenets/UIcomponents/ThankYouPage.dart';
+import 'package:pixel_runner/Componenets/UIcomponents/LevelSelection.dart';
 import 'package:pixel_runner/Componenets/UIcomponents/MainMenuPage.dart';
 
-enum GameState { menu, playing, thankYou }
+enum GameState { menu, levelSelection, playing, thankYou }
 
 class PixelRunner extends FlameGame with HasCollisionDetection {
   @override
@@ -19,12 +19,13 @@ class PixelRunner extends FlameGame with HasCollisionDetection {
   late Player player = Player(characterName: 'Ninja Frog');
   late Level currentLevel;
   late CameraComponent cam;
-  late JoystickComponent joystick;
   late JumpButton jumpButton;
+  late JoystickComponent joystick;
   
   List<String> levelNames = ['level_01', 'level_02', 'level_03'];
   List<String> characterNames = ['Ninja Frog', 'Mask Dude', 'Pink Man'];
   int currentLevelIndex = 0;
+  int savedLevelIndex = 0; // For continue functionality
 
   bool playSound = true;
   double soundVolume = 1.0;
@@ -35,7 +36,7 @@ class PixelRunner extends FlameGame with HasCollisionDetection {
     await _loadImages();
     await _loadSounds();
     FlameAudio.bgm.play('bgm.mp3', volume: 0.3);
-    _showMainMenu();
+    showMainMenu();
     return super.onLoad();
   }
 
@@ -54,7 +55,7 @@ class PixelRunner extends FlameGame with HasCollisionDetection {
     ]);
   }
 
-  void _showMainMenu() {
+  void showMainMenu() {
     gameState = GameState.menu;
     _clearGame();
     add(MainMenuPage());
@@ -63,12 +64,43 @@ class PixelRunner extends FlameGame with HasCollisionDetection {
   void startGame() {
     gameState = GameState.playing;
     currentLevelIndex = 0;
+    savedLevelIndex = 0;
     _clearGame();
     player = Player(characterName: characterNames[currentLevelIndex]);
     _loadLevel();
     _loadCamera();
-    _addJumpButton();
-    _addJoystick();
+    _addControls();
+  }
+
+  void showLevelSelection() {
+    gameState = GameState.levelSelection;
+    _clearGame();
+    add(LevelSelectionPage());
+  }
+
+  void startGameFromLevel(int levelIndex) {
+    gameState = GameState.playing;
+    currentLevelIndex = levelIndex;
+    _clearGame();
+    player = Player(characterName: characterNames[currentLevelIndex]);
+    _loadLevel();
+    _loadCamera();
+    _addControls();
+  }
+
+  void continueGame() {
+    if (savedLevelIndex > 0) {
+      gameState = GameState.playing;
+      currentLevelIndex = savedLevelIndex;
+      _clearGame();
+      player = Player(characterName: characterNames[currentLevelIndex]);
+      _loadLevel();
+      _loadCamera();
+      _addControls();
+    } else {
+      // If no progress, just start new game
+      startGame();
+    }
   }
 
   void exitGame() {
@@ -77,21 +109,21 @@ class PixelRunner extends FlameGame with HasCollisionDetection {
   }
 
   void returnToMenu() {
-    _showMainMenu();
+    savedLevelIndex = currentLevelIndex;
+    showMainMenu();
   }
 
   void _clearGame() {
     removeWhere((component) => 
       component is Level || 
       component is CameraComponent ||
-      component is JoystickComponent ||
-      component is JumpButton ||
       component is MainMenuPage ||
-      component is ThankYouPage
+      component is LevelSelectionPage
     );
   }
 
-  void _addJoystick() {
+  void _addControls() {
+    // Add joystick directly to game (not to world)
     joystick = JoystickComponent(
       background: SpriteComponent(
         sprite: Sprite(images.fromCache('HUD/Joystick.png')),
@@ -99,11 +131,11 @@ class PixelRunner extends FlameGame with HasCollisionDetection {
       knob: SpriteComponent(sprite: Sprite(images.fromCache('HUD/Knob.png'))),
       knobRadius: 20,
       margin: const EdgeInsets.only(left: 5, bottom: 32),
+      priority: 100,
     );
     add(joystick);
-  }
 
-  void _addJumpButton() {
+    // Add jump button directly to game (not to world)
     jumpButton = JumpButton();
     add(jumpButton);
   }
@@ -127,15 +159,6 @@ class PixelRunner extends FlameGame with HasCollisionDetection {
   }
 
   void loadNextLevel() {
-    if (currentLevelIndex < levelNames.length - 1) {
-      currentLevelIndex++;
-      player = Player(characterName: characterNames[currentLevelIndex]);
-      _loadLevel();
-      _loadCamera();
-    } else {
-      gameState = GameState.thankYou;
-      _clearGame();
-      add(ThankYouPage());
-    }
+    showMainMenu();
   }
 }
