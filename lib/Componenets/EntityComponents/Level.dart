@@ -4,8 +4,11 @@ import 'package:flame/components.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:pixel_runner/Componenets/EntityComponents/Checkpoint.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Chicken.dart';
 import 'package:pixel_runner/Componenets/EntityComponents/CollisionBlock.dart';
 import 'package:pixel_runner/Componenets/EntityComponents/Fruit.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Plant.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Rino.dart';
 import 'package:pixel_runner/Componenets/ConstVars.dart';
 import 'package:pixel_runner/Componenets/EntityComponents/Saw.dart';
 import 'package:pixel_runner/PixelRunner.dart';
@@ -20,8 +23,10 @@ class Level extends World with HasGameReference<PixelRunner> {
   late int fruits = 0;
   
   // Store fruit spawn data for respawning
-  List<Map<String, dynamic>> fruitSpawnData = [];
-  
+  List<Fruit> fruitSpawnData = [];
+  List<Chicken> chickenSpawnData = []; 
+  List<Rino> rinoSpawnData = [];
+  List<Plant> plantSpawnData = [];
   // Reference to checkpoint for resetting
   Checkpoint? checkpoint;
 
@@ -58,20 +63,14 @@ class Level extends World with HasGameReference<PixelRunner> {
           add(game.player);
           break;
         case 'Fruit':
-          // Store fruit spawn data for respawning
-          fruitSpawnData.add({
-            'name': spawnPoint.name,
-            'x': spawnPoint.x,
-            'y': spawnPoint.y,
-            'width': spawnPoint.width,
-            'height': spawnPoint.height,
-          });
           
           final fruit = Fruit(
             fruit: spawnPoint.name,
             position: Vector2(spawnPoint.x, spawnPoint.y),
             size: Vector2(spawnPoint.width, spawnPoint.height),
           );
+          // Store fruit spawn data for respawning
+          fruitSpawnData.add(fruit);
           fruits++;
           add(fruit);
           break;
@@ -84,6 +83,35 @@ class Level extends World with HasGameReference<PixelRunner> {
             offPos: spawnPoint.properties.getValue('offPos'),
           );
           add(saw);
+          break;
+        case 'Chicken':
+          final chicken = Chicken(
+            position: Vector2(spawnPoint.x, spawnPoint.y),
+            size: Vector2(spawnPoint.width, spawnPoint.height),
+            offNeg: spawnPoint.properties.getValue('offNeg'),
+            offPos: spawnPoint.properties.getValue('offPos')
+          );
+          add(chicken);
+          chickenSpawnData.add(chicken);
+          break;
+        case 'Rino':
+          final rino = Rino(
+            position: Vector2(spawnPoint.x, spawnPoint.y),
+            size: Vector2(spawnPoint.width, spawnPoint.height),
+            offNeg: spawnPoint.properties.getValue('offNeg'),
+            offPos: spawnPoint.properties.getValue('offPos')
+          );
+          add(rino);
+          rinoSpawnData.add(rino);
+          break;
+        case 'Plant':
+          final plant = Plant(
+            position: Vector2(spawnPoint.x, spawnPoint.y),
+            size: Vector2(spawnPoint.width, spawnPoint.height),
+            isRight: spawnPoint.properties.getValue('isRight'),
+          );
+          add(plant);
+          plantSpawnData.add(plant);
           break;
         case 'Checkpoint':
           checkpoint = Checkpoint(
@@ -122,8 +150,6 @@ class Level extends World with HasGameReference<PixelRunner> {
           collisionBlocks.add(block);
       }
     }
-
-    game.player.collisionBlocks = collisionBlocks;
   }
 
   void _scrollingBackground() {
@@ -154,30 +180,56 @@ class Level extends World with HasGameReference<PixelRunner> {
   }
   
   // Respawn all fruits at their original positions
-  void respawnAllFruits() {
-    // Remove all existing fruits (including collected ones)
-    final existingFruits = children.whereType<Fruit>().toList();
-    for (final fruit in existingFruits) {
-      fruit.removeFromParent();
-    }
-    
+
+  void respawnFruit(){
     // Reset collected fruits counter
     collectedFruits = 0;
     // Normalize total fruits count (safety in case of mismatches)
     fruits = fruitSpawnData.length;
-    
     // Respawn all fruits from saved spawn data
-    for (final fruitData in fruitSpawnData) {
-      final fruit = Fruit(
-        fruit: fruitData['name'],
-        position: Vector2(fruitData['x'], fruitData['y']),
-        size: Vector2(fruitData['width'], fruitData['height']),
-      );
-      add(fruit);
+    for (final fruit in fruitSpawnData) {
+      if(fruit.parent == null){
+        fruit.reset();
+        add(fruit);
+      }
     }
-    
-    // Reset checkpoint to allow re-activation
+  }
+
+  void respawnChicken(){
+    for(final chicken in chickenSpawnData) {
+      chicken.removeFromParent();
+      chicken.reset();
+      add(chicken);
+    }
+  }
+
+  void respawnRino(){
+    for(final rino in rinoSpawnData){
+      if(rino.parent == null){
+        rino.reset();
+        add(rino);
+      }
+    }
+  }
+
+  void respawnPlant(){
+    for(final plant in plantSpawnData){
+      if(plant.parent == null){
+        plant.reset();
+        add(plant);
+      }
+    }
+  }
+
+  void resetCheckPoint(){
     checkpoint?.resetCheckpoint();
-    
+  }
+
+  void respawnAll() {
+    respawnFruit();  
+    respawnChicken();
+    respawnRino();
+    respawnPlant();
+    resetCheckPoint();
   }
 }

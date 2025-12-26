@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:pixel_runner/Componenets/EntityComponents/Level.dart';
 import 'package:pixel_runner/Componenets/EntityComponents/Player.dart';
 import 'package:pixel_runner/Componenets/IOcomponents/JumpButton.dart';
+import 'package:pixel_runner/Componenets/UIcomponents/ThankYouPage.dart';
 
 class PixelRunner extends FlameGame with HasCollisionDetection {
   @override
@@ -17,8 +18,8 @@ class PixelRunner extends FlameGame with HasCollisionDetection {
   late CameraComponent cam;
   late JoystickComponent joystick;
   late JumpButton jumpButton;
-  List<String> levelNames = ['level_01','level_02'];
-  List<String> characterNames = ['Ninja Frog','Mask Dude'];
+  List<String> levelNames = ['level_01','level_02','level_03'];
+  List<String> characterNames = ['Ninja Frog','Mask Dude','Pink Man'];
   int currentLevelIndex = 0;
 
   bool playSound = true;
@@ -63,6 +64,7 @@ class PixelRunner extends FlameGame with HasCollisionDetection {
       'collect_fruit.wav',
       'hit.wav',
       'disappear.wav',
+      'bounce.wav',
       'bgm.mp3'
     ]);
   }
@@ -88,11 +90,12 @@ class PixelRunner extends FlameGame with HasCollisionDetection {
   void loadNextLevel() {
     if (currentLevelIndex < levelNames.length - 1) {
       currentLevelIndex++;
+      player = Player(characterName: characterNames[currentLevelIndex]);
+      _loadLevel();
+      _loadCamera();
     } else {
-      currentLevelIndex = 0;
+      removeWhere((component) => component is Level);
+      add(ThankYouPage());
     }
-    player = Player(characterName: characterNames[currentLevelIndex]);
-    _loadLevel();
-    _loadCamera();
   }
 }

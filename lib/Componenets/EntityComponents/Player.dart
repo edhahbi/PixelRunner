@@ -3,8 +3,10 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:pixel_runner/Componenets/EntityComponents/Checkpoint.dart';
-import 'package:pixel_runner/Componenets/EntityComponents/CollisionBlock.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Chicken.dart';
 import 'package:pixel_runner/Componenets/EntityComponents/Fruit.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Plant.dart';
+import 'package:pixel_runner/Componenets/EntityComponents/Rino.dart';
 import 'package:pixel_runner/Componenets/EntityComponents/Saw.dart';
 import 'package:pixel_runner/Componenets/PhysicsComponents/CustomHitBox.dart';
 import 'package:pixel_runner/Componenets/ConstVars.dart';
@@ -51,8 +53,6 @@ class Player extends SpriteAnimationGroupComponent
     offsetY: 4,
     width: 14,
     height: 28);
-  List<CollisionBlock> collisionBlocks = [];
-
   
   Player({this.characterName = "Mask Dude", position})
     : super(position: position, priority: entityPriority);
@@ -69,7 +69,9 @@ class Player extends SpriteAnimationGroupComponent
   @override
   void update(double dt) {
     accumulatedTime+= dt;
-    while(accumulatedTime >= fixedDelta){
+    int iterations = 0;
+    const maxIterations = 4;
+    while(accumulatedTime >= fixedDelta && iterations < maxIterations){
       if(!gotHit && !reachedCheckpoint){
         _updatePlayerState();
         _updatePlayerMovement(fixedDelta);
@@ -78,8 +80,11 @@ class Player extends SpriteAnimationGroupComponent
         _checkVerticalCollision();
       }
       accumulatedTime -= fixedDelta;
+      iterations++;
     }
-    print('${game.currentLevel.collectedFruits}');
+    if (iterations >= maxIterations) {
+      accumulatedTime = 0;
+    }
     super.update(dt);
   }
 
@@ -92,6 +97,12 @@ class Player extends SpriteAnimationGroupComponent
         _respawn();
       } else if (other is Checkpoint && game.currentLevel.collectedAllFruits()) {
         _reachedCheckpoint();
+      } else if (other is Chicken){
+        other.collidedWithPlayer();
+      } else if(other is Rino){
+        other.collidedWithPlayer();
+      } else if(other is Plant){
+        other.collidedWithPlayer();
       }
     }
     super.onCollisionStart(intersectionPoints, other);
@@ -204,7 +215,7 @@ class Player extends SpriteAnimationGroupComponent
   }
 
   void _checkHorizontalCollisions() {
-    for (final block in collisionBlocks) {
+    for (final block in game.currentLevel.collisionBlocks) {
       //handeling collisions
       if (checkCollision(this, block) && !block.isPlatform
       ) {
@@ -227,7 +238,7 @@ class Player extends SpriteAnimationGroupComponent
   }
 
   void _checkVerticalCollision() {
-    for (final block in collisionBlocks) {
+    for (final block in game.currentLevel.collisionBlocks) {
       //if there is a collision
       if (checkCollision(this, block)) {
         //treat it the blocks the same way when falling
@@ -268,7 +279,7 @@ class Player extends SpriteAnimationGroupComponent
     animationTicker?.reset();
 
     // Respawn all fruits and reset score
-    game.currentLevel.respawnAllFruits();
+    game.currentLevel.respawnAll();
 
     scale.x = 1;
     position = startPosition - Vector2.all(32);
@@ -307,5 +318,9 @@ class Player extends SpriteAnimationGroupComponent
     const waitToChange = Duration(seconds: 1);
     velocity = Vector2.all(0);
     Future.delayed(waitToChange,() => game.loadNextLevel());
+  }
+
+  void collidedwithEnemy() {
+    _respawn();
   }
 }

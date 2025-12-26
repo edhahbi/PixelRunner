@@ -30,7 +30,7 @@ class Saw extends SpriteAnimationComponent
   @override
   FutureOr<void> onLoad() {
     // debugMode = true;
-    _handleDirection();
+    _calculateRange();
     _loadHitBox();
     _loadAnimation();
 
@@ -54,13 +54,19 @@ class Saw extends SpriteAnimationComponent
     ));
   }
 
-  void _handleDirection(){
+  void _calculateRange(){
     if(isVertical){
       rangeNeg = position.y - offNeg * tileSize;
       rangePos = position.y + offPos * tileSize;
     }else{
       rangeNeg = position.x - offNeg * tileSize;
       rangePos = position.x + offPos * tileSize;
+    }
+    // ensure ranges are ordered
+    if (rangeNeg > rangePos) {
+      final tmp = rangeNeg;
+      rangeNeg = rangePos;
+      rangePos = tmp;
     }
   }
 
@@ -71,18 +77,30 @@ class Saw extends SpriteAnimationComponent
   }
   
   void _moveVertical(double dt){
-    if(position.y <= rangeNeg || position.y >= rangePos){
-      moveDirection = -moveDirection;
+    if (rangeNeg == rangePos) {
+      return; // no movement range
     }
     position.y += moveDirection * moveSpeed * dt;
-    
+    if (position.y <= rangeNeg){
+      position.y = rangeNeg;
+      moveDirection = 1;
+    } else if (position.y >= rangePos){
+      position.y = rangePos;
+      moveDirection = -1;
+    }
   }
 
   void _moveHorizontal(double dt){
-    if(position.x >= rangePos || position.x <= rangeNeg){
-      moveDirection = -moveDirection;
+    if (rangeNeg == rangePos) {
+      return; // no movement range
     }
-    position.x += moveDirection * moveSpeed * dt; 
-  
+    position.x += moveDirection * moveSpeed * dt;
+    if (position.x <= rangeNeg){
+      position.x = rangeNeg;
+      moveDirection = 1;
+    } else if (position.x + width >= rangePos){
+      position.x = rangePos - width;
+      moveDirection = -1;
+    }
   }
 }

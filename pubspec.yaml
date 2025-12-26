@@ -12,6 +12,7 @@ dependencies:
   flame: ^1.34.0
   flame_tiled: ^3.0.9
   flame_audio: ^2.11.12
+  google_fonts: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -34,3 +35,6 @@ flutter:
     - assets/images/Main Characters/Pink Man/
     - assets/images/Main Characters/Virtual Guy/
     - assets/audio/
+    - assets/images/Enemies/Chicken/
+    - assets/images/Enemies/Rino/
+    - assets/images/Enemies/Plant/

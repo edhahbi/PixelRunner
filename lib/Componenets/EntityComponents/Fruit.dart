@@ -77,4 +77,10 @@ class Fruit extends SpriteAnimationComponent
       removeFromParent();
     }
   }
+
+  void reset(){
+    collected = false;
+    _loadAnimation();
+    animationTicker?.reset();
+  }
 }
