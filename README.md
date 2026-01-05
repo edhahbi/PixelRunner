@@ -2,10 +2,10 @@
 
 ## Page de titre
 - **Titre du projet**: PixelRunner
-- **Équipe**: À compléter
-- **Encadrant**: À compléter
-- **Semestre**: À compléter
-- **Établissement**: À compléter
+- **Équipe**: Noureddine Edhahbi
+- **Encadrant**: Dorra Dhaou
+- **Semestre**: Semestre 1
+- **Établissement**: ISIMM
 
 ---
 
