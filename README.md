@@ -654,6 +654,7 @@ flutter run
   - Plus d’ennemis/obstacles, power-ups, boss.
   - Sauvegarde de progression, scores, classements.
   - Effets sonores/musiques supplémentaires.
+  - Refactoriser le project en utilisant le patron de conception "State Machine" pour simplifier le code.
 
 ---
 
