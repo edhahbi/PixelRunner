@@ -48,7 +48,8 @@ PixelRunner est un jeu de plateforme 2D pixellisé développé avec Flutter et F
 - **Contraintes techniques**:
   - Flutter + Flame, intégration Tiled (`.tmx`), assets spritesheet.
   - Performances cohérentes: timestep fixe, limitation itérations physiques.
-  - Multi-plateforme (Android, iOS, Windows, macOS, Web).
+  - Multi-plateforme (Android, iOS, Windows, macOS).
+Note: l'utilisation de web est possible (via webAssembly) mais a eviter pour des raisons de performance. 
 
 ---
 
